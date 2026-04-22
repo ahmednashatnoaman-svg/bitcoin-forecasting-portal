@@ -136,55 +136,65 @@ def run_exponential_smoothing(df, target_col, horizon, confidence_level, **kwarg
     return {'forecast_df': future_forecast, 'full_forecast_curve': full_curve, 'mae': mae, 'rmse': rmse}
 
 
-def create_lagged_features(df, target_col, lags):
-    X = []
-    _y = []
-    dates = []
-    # Assumes df is sorted by Date
-    vals = df[target_col].values
-    idx = df.index
-    for i in range(lags, len(vals)):
-        X.append(vals[i-lags:i])
-        _y.append(vals[i])
-        dates.append(idx[i])
-    return np.array(X), np.array(_y), dates
-
 def run_xgboost(df, target_col, horizon, confidence_level, **kwargs):
     lags = kwargs.get('lag_days', 14)
     n_estimators = kwargs.get('n_estimators', 100)
     max_depth = kwargs.get('max_depth', 3)
     learning_rate = kwargs.get('learning_rate', 0.1)
     
-    X, y, dates = create_lagged_features(df, target_col, lags)
+    # Differencing to make data stationary and allow XGBoost to forecast trends
+    y_raw = df[target_col].values
+    y_diff = np.diff(y_raw)
+    dates_diff = df.index[1:]
+    
+    X = []
+    _y = []
+    dates = []
+    
+    for i in range(lags, len(y_diff)):
+        X.append(y_diff[i-lags:i])
+        _y.append(y_diff[i])
+        dates.append(dates_diff[i])
+        
+    X = np.array(X)
+    _y = np.array(_y)
     
     if len(X) < 100:
         raise ValueError("Not enough data to train XGBoost with the requested lags.")
         
     split_idx = int(len(X) * 0.8)
     X_train, X_test = X[:split_idx], X[split_idx:]
-    y_train, y_test = y[:split_idx], y[split_idx:]
+    y_train, y_test = _y[:split_idx], _y[split_idx:]
     
     # Backtest
     model_bt = xgb.XGBRegressor(n_estimators=n_estimators, max_depth=max_depth, learning_rate=learning_rate, random_state=42)
     model_bt.fit(X_train, y_train)
-    preds_bt = model_bt.predict(X_test)
-    mae, rmse = calculate_metrics(y_test, preds_bt)
+    preds_diff_bt = model_bt.predict(X_test)
+    
+    # Reconstruct prices for backtest
+    actual_prev_prices_bt = y_raw[lags + split_idx : lags + split_idx + len(y_test)]
+    preds_price_bt = actual_prev_prices_bt + preds_diff_bt
+    actual_prices_bt = y_raw[lags + split_idx + 1 : lags + split_idx + 1 + len(y_test)]
+    
+    mae, rmse = calculate_metrics(actual_prices_bt, preds_price_bt)
     
     # Full dataset
     model_full = xgb.XGBRegressor(n_estimators=n_estimators, max_depth=max_depth, learning_rate=learning_rate, random_state=42)
-    model_full.fit(X, y)
+    model_full.fit(X, _y)
     
-    # Iterative forecast
-    last_window = X[-1][1:].tolist() + [y[-1]]
-    preds_full = []
+    # Iterative forecast (on differences)
+    last_window = X[-1][1:].tolist() + [_y[-1]]
+    preds_diff_future = []
     current_window = np.array([last_window])
     for _ in range(horizon):
-        pred = model_full.predict(current_window)[0]
-        preds_full.append(pred)
-        new_window = current_window[0][1:].tolist() + [pred]
+        pred_diff = model_full.predict(current_window)[0]
+        preds_diff_future.append(pred_diff)
+        new_window = current_window[0][1:].tolist() + [pred_diff]
         current_window = np.array([new_window])
         
-    preds_full = np.array(preds_full)
+    # Reconstruct future prices
+    last_actual_price = y_raw[-1]
+    preds_price_future = last_actual_price + np.cumsum(preds_diff_future)
     
     # Simulated confidence intervals based on backtest RMSE expanding over time
     margin = rmse * np.sqrt(np.arange(1, horizon + 1)/3.0) 
@@ -195,19 +205,21 @@ def run_xgboost(df, target_col, horizon, confidence_level, **kwargs):
     
     future_dates = pd.date_range(start=df.index[-1] + pd.Timedelta(days=1), periods=horizon, freq='D')
     future_forecast = pd.DataFrame({
-        'Predicted_Price': preds_full,
-        'Lower_Bound': preds_full - margin,
-        'Upper_Bound': preds_full + margin
+        'Predicted_Price': preds_price_future,
+        'Lower_Bound': preds_price_future - margin,
+        'Upper_Bound': preds_price_future + margin
     }, index=future_dates)
     future_forecast.index.name = 'Date'
     
-    # In-sample predictions
-    in_sample = model_full.predict(X)
-    in_sample_s = pd.Series(in_sample, index=dates)
+    # In-sample predictions reconstructed
+    in_sample_diff = model_full.predict(X)
+    actual_prev_prices_in_sample = y_raw[lags : lags + len(in_sample_diff)]
+    in_sample_price = actual_prev_prices_in_sample + in_sample_diff
+    in_sample_s = pd.Series(in_sample_price, index=dates)
     
     full_curve = pd.concat([
         pd.DataFrame({'yhat': in_sample_s}),
-        pd.DataFrame({'yhat': preds_full, 'yhat_lower': future_forecast['Lower_Bound'], 'yhat_upper': future_forecast['Upper_Bound']}, index=future_dates)
+        pd.DataFrame({'yhat': preds_price_future, 'yhat_lower': future_forecast['Lower_Bound'], 'yhat_upper': future_forecast['Upper_Bound']}, index=future_dates)
     ])
     
     return {'forecast_df': future_forecast, 'full_forecast_curve': full_curve, 'mae': mae, 'rmse': rmse}
