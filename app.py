@@ -9,29 +9,17 @@ import forecaster as fc
 # 1. Page Configuration & Theme Dictionary
 st.set_page_config(layout="wide", page_title="BTC Forecast Pro", page_icon="🏦", initial_sidebar_state="expanded")
 
-THEMES = {
-    'Dark Neon': {
-        'primary': '#00FFA3', 'bg': '#0E1117', 'card_bg': '#1E212B', 'text': '#FFFFFF', 
-        'plotly_template': 'plotly_dark', 'history_line': '#8E9EB6',
-        'prophet': '#00FFA3', 'arima': '#00B8FF', 'es': '#FF007A', 'xgb': '#FFB800'
-    },
-    'Midnight Corporate': {
-        'primary': '#3B82F6', 'bg': '#0F172A', 'card_bg': '#1E293B', 'text': '#F8FAFC', 
-        'plotly_template': 'plotly_dark', 'history_line': '#94A3B8',
-        'prophet': '#3B82F6', 'arima': '#10B981', 'es': '#8B5CF6', 'xgb': '#F59E0B'
-    },
-    'Light Minimal': {
-        'primary': '#2563EB', 'bg': '#F1F5F9', 'card_bg': '#FFFFFF', 'text': '#0F172A', 
-        'plotly_template': 'plotly_white', 'history_line': '#64748B',
-        'prophet': '#2563EB', 'arima': '#059669', 'es': '#7C3AED', 'xgb': '#D97706'
-    }
+active_theme = {
+    'primary': '#2563EB', 'bg': '#F1F5F9', 'card_bg': '#FFFFFF', 'text': '#0F172A', 
+    'plotly_template': 'plotly_white', 'history_line': '#64748B',
+    'prophet': '#2563EB', 'arima': '#059669', 'es': '#7C3AED', 'xgb': '#D97706'
 }
 
 # 2. State Management Initialization
 if 'config' not in st.session_state:
     st.session_state.config = {
         'model': 'Prophet', 'horizon': 30, 'confidence': 0.95, 'target_col': 'Close',
-        'show_sma': False, 'model_kwargs': {}, 'theme': 'Midnight Corporate'
+        'show_sma': False, 'model_kwargs': {}
     }
 if 'is_generated' not in st.session_state:
     st.session_state.is_generated = False
@@ -39,16 +27,11 @@ if 'is_generated' not in st.session_state:
 def update_config(key, value):
     st.session_state.config[key] = value
 
-# Top UI Theme Selection
-theme_choice = st.session_state.config['theme']
-active_theme = THEMES[theme_choice]
-
 # Inject Dynamic CSS
 st.markdown(f"""
     <style>
         #MainMenu {{visibility: hidden;}}
         footer {{visibility: hidden;}}
-        header {{visibility: hidden;}}
         .block-container {{
             padding-top: 1rem;
             padding-bottom: 2rem;
@@ -96,12 +79,8 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # 3. Application Layout 
-colA, colB = st.columns([0.8, 0.2])
-with colA:
-    st.title("🏦 BTC Forecast Pro")
-    st.markdown("A premium business intelligence dashboard for cryptocurrency time-series analysis.")
-with colB:
-    st.selectbox("🎨 UI Theme Pattern", list(THEMES.keys()), index=list(THEMES.keys()).index(theme_choice), key='theme_sel', on_change=lambda: update_config('theme', st.session_state.theme_sel))
+st.title("🏦 BTC Forecast Pro")
+st.markdown("A premium business intelligence dashboard for cryptocurrency time-series analysis.")
 
 st.divider()
 
