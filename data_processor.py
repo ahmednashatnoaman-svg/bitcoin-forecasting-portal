@@ -53,21 +53,22 @@ def load_and_preprocess_data(file_path_or_buffer, target_col='Close'):
     # Resample to Daily if we have intraday data (like 1m intervals)
     # Check median time difference
     time_diff = df.index.to_series().diff().median()
+    
+    # We only care about numerical columns for forecasting
+    df_numeric = df.select_dtypes(include=['number'])
+    
     if time_diff < pd.Timedelta(days=1):
-        # We need to resample. Keep it simple: take the last value of the day for Close.
-        # If open, high, low, or volume are needed, we can do appropriate aggregation.
-        # But since user selects a single target column, we will resample just that column using 'last' or 'mean' depending on choice.
-        # We'll also keep other numerical columns by taking the mean or last for context if needed.
-        df = df[[target_col]].resample('D').last()
+        # We need to resample. Keep it simple: take the last value of the day.
+        df = df_numeric.resample('D').last()
     else:
-        df = df[[target_col]]
+        df = df_numeric
 
     # Ensure time-series continuity (validation check)
     full_idx = pd.date_range(start=df.index.min(), end=df.index.max(), freq='D')
     df = df.reindex(full_idx)
     
     # Forward fill missing values
-    df[target_col] = df[target_col].ffill()
+    df = df.ffill()
     
     # Keep the final index named 'Date'
     df.index.name = 'Date'
