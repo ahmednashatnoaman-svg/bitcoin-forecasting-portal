@@ -173,3 +173,6 @@ dataset/*.csv
 dataset_data/*
 dataset/
 data/
+
+#docs
+docs/

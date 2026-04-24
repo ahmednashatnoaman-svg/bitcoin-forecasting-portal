@@ -4,7 +4,19 @@ import pandas as pd
 import numpy as np
 
 import src.data_processor as dp
-import src.forecaster as fc
+from src.prophet_model import run_prophet
+from src.arima_model import run_arima
+from src.holtwinters_model import run_exponential_smoothing
+from src.xgboost_model import run_xgboost
+from src.random_forest_model import run_random_forest
+
+FORECASTERS = {
+    'Prophet': run_prophet,
+    'ARIMA': run_arima,
+    'Exponential Smoothing': run_exponential_smoothing,
+    'XGBoost': run_xgboost,
+    'Random Forest (ML Regressor)': run_random_forest
+}
 
 # 1. Page Configuration & Theme Dictionary
 st.set_page_config(layout="wide", page_title="BTC Forecast Pro", page_icon="🏦", initial_sidebar_state="expanded")
@@ -79,18 +91,19 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # 3. Application Layout 
-st.title("🏦 BTC Forecast Pro")
-st.markdown("A premium business intelligence dashboard for cryptocurrency time-series analysis.")
+col1, col2 = st.columns([0.80, 0.20])
+with col1:
+    st.title("🏦 BTC Forecast Pro")
+    st.markdown("A premium business intelligence dashboard for cryptocurrency time-series analysis.")
+with col2:
+    st.write("###") # Vertical spacer to move logo down
+    st.image("docs/ColoredLogo.png", use_container_width=True)
 
 st.divider()
 
 # Sidebar Panel
 with st.sidebar:
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        st.image("docs/ColoredLogo.png", width=100)
-    with col2:
-        st.image("https://upload.wikimedia.org/wikipedia/commons/4/46/Bitcoin.svg", width=50)
+    st.image("https://upload.wikimedia.org/wikipedia/commons/4/46/Bitcoin.svg", width=60)
     st.markdown("## Control Panel")
     
     with st.expander("📂 Dataset Configuration", expanded=True):
@@ -112,6 +125,9 @@ with st.sidebar:
             st.markdown("#### Prophet Settings")
             kwargs['changepoint_prior_scale'] = st.slider("Changepoint Prior Scale", 0.01, 0.50, 0.15)
             kwargs['seasonality_prior_scale'] = st.slider("Seasonality Prior Scale", 1.0, 20.0, 10.0)
+            kwargs['daily_seasonality'] = st.checkbox("Daily Seasonality (Prophet)", value=False)
+            kwargs['weekly_seasonality'] = st.checkbox("Weekly Seasonality (Prophet)", value=True)
+            kwargs['yearly_seasonality'] = st.checkbox("Yearly Seasonality (Prophet)", value=True)
         
         if model_choice in ['ARIMA', 'Compare All Models']:
             st.markdown("#### ARIMA Settings")
@@ -158,7 +174,7 @@ with st.sidebar:
         st.session_state.is_generated = True
 
 if uploaded_file is None:
-    st.info("👋 Upload a Kaggle BTC dataset (CSV) from the sidebar to begin analysis. The app handles 1M granularity scaling instantly.")
+    st.info("👋 Upload a Kaggle BTC dataset (CSV) from the sidebar to begin analysis. The app handles 1M granularity scaling instantly.\n\nRecommended Dataset: [Comprehensive BTC/USD 1M Data](https://www.kaggle.com/datasets/imranbukhari/comprehensive-btcusd-1m-data)")
     st.stop()
 
 # 4. Processing Pipeline
@@ -203,7 +219,7 @@ with tab1:
         
         for m in models_to_run:
             try:
-                results[m] = fc.FORECASTERS[m](df, target_col, horizon, confidence, **model_kwargs)
+                results[m] = FORECASTERS[m](df, target_col, horizon, confidence, **model_kwargs)
             except Exception as e:
                 st.warning(f"Failed to fit {m}: {e}")
 
@@ -308,3 +324,11 @@ with tab3:
     perf_data = [{"Algorithmic Core": k, "Mean Absolute Error (USD)": f"${v['mae']:,.2f}", "Root Mean Squared Error (USD)": f"${v['rmse']:,.2f}"} for k, v in results.items()]
     st.table(pd.DataFrame(perf_data))
     st.info("The RMSE provides a rigid constraint representing the standard deviation of unexplained variance in historical bounds testing. Algorithms with lower RMSEs correctly matched actual pricing movements closer in the final backtesting window.")
+    
+    if 'Prophet' in results:
+        st.subheader("Prophet Components & Seasonality Insights")
+        try:
+            fig_comp = results['Prophet']['model_full'].plot_components(results['Prophet']['forecast_full'])
+            st.pyplot(fig_comp)
+        except Exception as e:
+            st.warning(f"Could not render Prophet components: {e}")

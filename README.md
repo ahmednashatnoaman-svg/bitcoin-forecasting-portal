@@ -12,6 +12,7 @@
 ---
 
 A premium Streamlit application designed for sophisticated financial time-series analysis to forecast Bitcoin (BTC) price trends. This project features a robust automated data pipeline, professional UI aesthetics, and rigorous machine learning algorithms configured specifically to handle high-volatility financial data.
+Data source used for development: [Comprehensive BTC/USD 1M Data](https://www.kaggle.com/datasets/imranbukhari/comprehensive-btcusd-1m-data)
 
 ## 🌟 Key Features
 
@@ -45,10 +46,15 @@ The portal utilizes multiple parallel algorithms tailored to handle cryptocurren
 ├── README.md                   # Project documentation
 ├── src/                        # Core backend package
 │   ├── data_processor.py       # Data cleaning and technical indicator logic
-│   └── forecaster.py           # Machine learning model architectures
+│   ├── prophet_model.py        # Prophet architecture
+│   ├── arima_model.py          # ARIMA engine
+│   ├── holtwinters_model.py    # Holt-Winters smoothing
+│   ├── xgboost_model.py        # XGBoost ML engine
+│   ├── random_forest_model.py  # Random Forest ML engine
+│   ├── metrics.py              # Performance evaluation utilities
+│   └── __init__.py             # Package initializer
 ├── notebooks/                  # Experimental Jupyter Notebooks
-│   └── bitcoin-price-prediction-arima-xgboost-lstm-fbprop.ipynb
-├── docs/                       # Specifications and reference documents
+├── docs/                       # Reference documents (ignored in git)
 └── data/                       # Local dataset directory
 ```
 
