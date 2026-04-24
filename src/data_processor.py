@@ -65,6 +65,10 @@ def load_and_preprocess_data(file_path_or_buffer, target_col='Close'):
     df = df.reindex(full_idx).ffill()
     df.index.name = 'Date'
 
+    # Strip timezone info — Prophet does not support tz-aware datetimes
+    if df.index.tz is not None:
+        df.index = df.index.tz_localize(None)
+
     # Drop any remaining NaN rows at the very start before forward-fill had data
     df = df.dropna(how='all')
 
