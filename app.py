@@ -56,7 +56,8 @@ model_choice = sidebar_results['model_choice']
 update_config('horizon', sidebar_results['horizon'])
 update_config('confidence', sidebar_results['confidence'])
 update_config('model_kwargs', sidebar_results['kwargs'])
-update_config('show_sma', sidebar_results['show_sma'])
+update_config('show_sma_50',  sidebar_results['show_sma_50'])
+update_config('show_sma_200', sidebar_results['show_sma_200'])
 
 if sidebar_results['generate_btn']:
     st.session_state.is_generated = True
@@ -113,7 +114,9 @@ tab1, tab2, tab3 = st.tabs(["📈 Intelligence Dashboard", "📊 Raw Data Explor
 with tab1:
     render_kpi_cards(results, df, target_col, horizon, confidence, model_choice)
     st.markdown("<br>", unsafe_allow_html=True)
-    render_main_forecast_chart(df, results, target_col, st.session_state.config['show_sma'])
+    render_main_forecast_chart(df, results, target_col,
+                               st.session_state.config.get('show_sma_50', False),
+                               st.session_state.config.get('show_sma_200', False))
 
 with tab2:
     render_data_explorer(df, target_col, results)

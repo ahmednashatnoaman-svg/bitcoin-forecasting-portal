@@ -29,7 +29,7 @@ def render_kpi_cards(results, df, target_col, horizon, confidence, model_mode):
     col4.metric("Backtest RMSE",             f"± ${rmse:,.2f}")
 
 
-def render_main_forecast_chart(df, results, target_col, show_sma):
+def render_main_forecast_chart(df, results, target_col, show_sma_50=False, show_sma_200=False):
     """Renders the main Plotly forecast chart with per-model color coding."""
     fig = go.Figure()
 
@@ -41,18 +41,17 @@ def render_main_forecast_chart(df, results, target_col, show_sma):
         hovertemplate='%{x}<br>Price: $%{y:,.2f}<extra></extra>',
     ))
 
-    # 2. Optional SMA overlays
-    if show_sma:
-        if 'SMA_50' in df.columns:
-            fig.add_trace(go.Scatter(
-                x=df.index, y=df['SMA_50'], mode='lines',
-                name='50-Day SMA', line=dict(color='#A3A3A3', width=1, dash='dash'),
-            ))
-        if 'SMA_200' in df.columns:
-            fig.add_trace(go.Scatter(
-                x=df.index, y=df['SMA_200'], mode='lines',
-                name='200-Day SMA', line=dict(color='#555555', width=1, dash='dash'),
-            ))
+    # 2. Optional SMA overlays — each with its own distinct color
+    if show_sma_50 and 'SMA_50' in df.columns:
+        fig.add_trace(go.Scatter(
+            x=df.index, y=df['SMA_50'], mode='lines',
+            name='SMA 50', line=dict(color='#FBBF24', width=1.5, dash='dash'),
+        ))
+    if show_sma_200 and 'SMA_200' in df.columns:
+        fig.add_trace(go.Scatter(
+            x=df.index, y=df['SMA_200'], mode='lines',
+            name='SMA 200', line=dict(color='#818CF8', width=1.5, dash='dot'),
+        ))
 
     # 3. Per-model forecast traces with distinct colors
     forecast_start = df.index[-1]

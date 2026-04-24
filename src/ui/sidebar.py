@@ -70,7 +70,8 @@ def render_sidebar():
                     kwargs['seasonal_periods'] = st.slider("Seasonal Period (days)", 2, 52, 7)
 
         with st.expander("✨ Advanced Visuals"):
-            show_sma = st.checkbox("Overlay 50 & 200 Day SMA", value=st.session_state.config.get('show_sma', False))
+            show_sma_50  = st.checkbox("📈 SMA 50",  value=st.session_state.config.get('show_sma_50',  False))
+            show_sma_200 = st.checkbox("📉 SMA 200", value=st.session_state.config.get('show_sma_200', False))
 
         st.markdown("<br>", unsafe_allow_html=True)
         generate_btn = st.button("Generate Forecast", type="primary", use_container_width=True)
@@ -81,7 +82,8 @@ def render_sidebar():
         'horizon':       horizon,
         'confidence':    confidence,
         'kwargs':        kwargs,
-        'show_sma':      show_sma,
+        'show_sma_50':   show_sma_50,
+        'show_sma_200':  show_sma_200,
         'generate_btn':  generate_btn,
     }
 
