@@ -10,9 +10,20 @@
 </div>
 
 ---
-
 A premium Streamlit application designed for sophisticated financial time-series analysis to forecast Bitcoin (BTC) price trends. This project features a robust automated data pipeline, professional UI aesthetics, and rigorous machine learning algorithms configured specifically to handle high-volatility financial data.
-Data source used for development: [Comprehensive BTC/USD 1M Data](https://www.kaggle.com/datasets/imranbukhari/comprehensive-btcusd-1m-data)
+Data source used for development
+
+## 📊 Datasets Used
+This application is optimized for the following Kaggle datasets:
+- **Primary Development Dataset:** [Bitcoin Historical Data 2014–2024](https://www.kaggle.com/datasets/mczielinski/bitcoin-historical-data)
+- **High-Granularity Dataset:** [Comprehensive BTC/USD 1M Data](https://www.kaggle.com/datasets/imranbukhari/comprehensive-btcusd-1m-data)
+
+## 🌪️ Handling Market Volatility
+Cryptocurrency markets are notoriously volatile. This portal employs several strategies to produce reliable forecasts:
+- **Differencing (Stationarity):** For ML models like XGBoost and Random Forest, we operate on the *first-difference* of prices. This focuses the model on price changes (returns) rather than absolute levels, making it more resilient to explosive trends.
+- **Robust Scalers:** We use preprocessing techniques that reduce the impact of extreme price outliers (flash crashes or parabolic rallies).
+- **Ensemble Logic:** By providing a "Compare All Models" mode, the portal allows users to see if different mathematical approaches (Statistical ARIMA vs. ML XGBoost) are reaching a consensus, which is a powerful signal in volatile markets.
+- **Confidence Intervals:** Every model generates a probability band (e.g., 95% confidence). In high-volatility periods, these bands naturally widen, providing a realistic assessment of uncertainty.
 
 ## 🌟 Key Features
 
