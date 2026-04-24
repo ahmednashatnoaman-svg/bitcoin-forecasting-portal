@@ -52,7 +52,7 @@ st.divider()
 # 4. Sidebar & Inputs
 sidebar_results = render_sidebar()
 uploaded_file = sidebar_results['uploaded_file']
-model_choice = sidebar_results['model_choice']
+model_choice  = sidebar_results['model_choice']
 update_config('horizon', sidebar_results['horizon'])
 update_config('confidence', sidebar_results['confidence'])
 update_config('model_kwargs', sidebar_results['kwargs'])
@@ -62,18 +62,41 @@ update_config('show_sma_200', sidebar_results['show_sma_200'])
 if sidebar_results['generate_btn']:
     st.session_state.is_generated = True
 
-if uploaded_file is None:
+# Handle Kaggle dataset download
+if sidebar_results['kaggle_download'] and sidebar_results['kaggle_slug']:
+    slug = sidebar_results['kaggle_slug'].strip()
+    try:
+        import kagglehub, glob
+        with st.spinner(f"⬇️ Downloading **{slug}** from Kaggle..."):
+            path = kagglehub.dataset_download(slug)
+            csvs = glob.glob(f"{path}/**/*.csv", recursive=True)
+            if not csvs:
+                st.error("No CSV files found in the downloaded Kaggle dataset.")
+                st.stop()
+            st.session_state['kaggle_csv_path'] = csvs[0]
+            st.session_state['kaggle_slug_name'] = slug
+            st.success(f"✅ Loaded `{csvs[0].split('/')[-1]}` from Kaggle.")
+    except Exception as e:
+        st.error(f"Kaggle download failed: {e}")
+        st.stop()
+
+# Resolve data source priority: upload > kaggle download
+data_source = uploaded_file
+if data_source is None and 'kaggle_csv_path' in st.session_state:
+    data_source = st.session_state['kaggle_csv_path']
+
+if data_source is None:
     st.info(
-        "👋 Upload a Kaggle BTC dataset (CSV) from the sidebar to begin analysis.\n\n"
-        "**Recommended Datasets:**\n"
-        "- 📊 [Bitcoin Historical Data 2014–2024](https://www.kaggle.com/datasets/novandraanugrah/bitcoin-historical-datasets-2018-2024) — Daily OHLCV, ideal for all models\n"
-        "- ⚡ [Comprehensive BTC/USD 1M Data](https://www.kaggle.com/datasets/imranbukhari/comprehensive-btcusd-1m-data) — 1-minute granularity, auto-resampled to daily"
+        "👋 Upload a BTC dataset or paste a **Kaggle slug** and click Download.\n\n"
+        "**Example Kaggle Slugs:**\n"
+        "- `novandraanugrah/bitcoin-historical-datasets-2018-2024`\n"
+        "- `imranbukhari/comprehensive-btcusd-1m-data`"
     )
     st.stop()
 
 # 5. Data Processing
 try:
-    raw_df, fallback_target = dp.load_and_preprocess_data(uploaded_file, target_col='Close')
+    raw_df, fallback_target = dp.load_and_preprocess_data(data_source, target_col='Close')
 except Exception as e:
     st.error(f"Error processing file: {e}")
     st.stop()

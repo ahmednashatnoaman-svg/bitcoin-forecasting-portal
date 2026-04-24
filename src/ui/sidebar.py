@@ -13,6 +13,13 @@ def render_sidebar():
 
         with st.expander("📂 Dataset Configuration", expanded=True):
             uploaded_file = st.file_uploader("Upload CSV Dataset", type=['csv'])
+            st.markdown("**— or —**")
+            kaggle_slug = st.text_input(
+                "Kaggle Dataset Slug",
+                placeholder="e.g. novandraanugrah/bitcoin-historical-datasets-2018-2024",
+                help="Paste the slug from a Kaggle dataset URL: kaggle.com/datasets/{owner}/{name}",
+            )
+            kaggle_download = st.button("⬇️ Download from Kaggle", use_container_width=True, disabled=not kaggle_slug)
 
         with st.expander("⚙️ Model Parameters", expanded=True):
             model_choice = st.selectbox(
@@ -77,14 +84,16 @@ def render_sidebar():
         generate_btn = st.button("Generate Forecast", type="primary", use_container_width=True)
 
     return {
-        'uploaded_file': uploaded_file,
-        'model_choice':  model_choice,
-        'horizon':       horizon,
-        'confidence':    confidence,
-        'kwargs':        kwargs,
-        'show_sma_50':   show_sma_50,
-        'show_sma_200':  show_sma_200,
-        'generate_btn':  generate_btn,
+        'uploaded_file':    uploaded_file,
+        'kaggle_slug':      kaggle_slug,
+        'kaggle_download':  kaggle_download,
+        'model_choice':     model_choice,
+        'horizon':          horizon,
+        'confidence':       confidence,
+        'kwargs':           kwargs,
+        'show_sma_50':      show_sma_50,
+        'show_sma_200':     show_sma_200,
+        'generate_btn':     generate_btn,
     }
 
 
