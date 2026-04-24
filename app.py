@@ -96,6 +96,7 @@ if data_source is None:
     st.info(
         "👋 Upload a BTC dataset or paste a **Kaggle slug** and click Download.\n\n"
         "**Example Kaggle Slugs:**\n"
+        "- `mczielinski/bitcoin-historical-data`\n"
         "- `novandraanugrah/bitcoin-historical-datasets-2018-2024`\n"
         "- `imranbukhari/comprehensive-btcusd-1m-data`"
     )
