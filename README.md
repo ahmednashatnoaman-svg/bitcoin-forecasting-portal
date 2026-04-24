@@ -46,11 +46,12 @@ The portal utilizes multiple parallel algorithms tailored to handle cryptocurren
 ├── README.md                   # Project documentation
 ├── src/                        # Core backend package
 │   ├── data_processor.py       # Data cleaning and technical indicator logic
-│   ├── prophet_model.py        # Prophet architecture
-│   ├── arima_model.py          # ARIMA engine
-│   ├── holtwinters_model.py    # Holt-Winters smoothing
-│   ├── xgboost_model.py        # XGBoost ML engine
-│   ├── random_forest_model.py  # Random Forest ML engine
+│   ├── prophet_model.py        # Forecasting models (individual files)
+│   ├── ...
+│   ├── ui/                     # UI Components
+│   │   ├── styles.py           # CSS & Themes
+│   │   ├── sidebar.py          # Sidebar inputs
+│   │   └── visualizations.py   # Charts & Dashboards
 │   ├── metrics.py              # Performance evaluation utilities
 │   └── __init__.py             # Package initializer
 ├── notebooks/                  # Experimental Jupyter Notebooks
