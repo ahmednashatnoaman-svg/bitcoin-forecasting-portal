@@ -9,7 +9,6 @@ ACTIVE_THEME = {
 def inject_custom_css():
     st.markdown(f"""
         <style>
-            #MainMenu {{visibility: hidden;}}
             footer {{visibility: hidden;}}
             .block-container {{
                 padding-top: 1rem;

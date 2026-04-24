@@ -36,7 +36,6 @@ if 'is_generated' not in st.session_state:
 def update_config(key, value):
     st.session_state.config[key] = value
 
-# Inject CSS
 inject_custom_css()
 
 # 3. Header
