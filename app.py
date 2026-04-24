@@ -45,7 +45,7 @@ with col1:
     st.markdown("A premium business intelligence dashboard for cryptocurrency time-series analysis.")
 with col2:
     st.write("###") 
-    st.image("docs/ColoredLogo.png", use_container_width=True)
+    st.image("src/ui/assets/iti.png", use_container_width=True)
 
 st.divider()
 
