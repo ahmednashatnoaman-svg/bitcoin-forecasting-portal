@@ -62,7 +62,12 @@ if sidebar_results['generate_btn']:
     st.session_state.is_generated = True
 
 if uploaded_file is None:
-    st.info("👋 Upload a Kaggle BTC dataset (CSV) from the sidebar to begin analysis. The app handles 1M granularity scaling instantly.\n\nRecommended Dataset: [Comprehensive BTC/USD 1M Data](https://www.kaggle.com/datasets/imranbukhari/comprehensive-btcusd-1m-data)")
+    st.info(
+        "👋 Upload a Kaggle BTC dataset (CSV) from the sidebar to begin analysis.\n\n"
+        "**Recommended Datasets:**\n"
+        "- 📊 [Bitcoin Historical Data 2014–2024](https://www.kaggle.com/datasets/novandraanugrah/bitcoin-historical-datasets-2018-2024) — Daily OHLCV, ideal for all models\n"
+        "- ⚡ [Comprehensive BTC/USD 1M Data](https://www.kaggle.com/datasets/imranbukhari/comprehensive-btcusd-1m-data) — 1-minute granularity, auto-resampled to daily"
+    )
     st.stop()
 
 # 5. Data Processing
