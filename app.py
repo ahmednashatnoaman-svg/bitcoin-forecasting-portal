@@ -86,7 +86,11 @@ st.divider()
 
 # Sidebar Panel
 with st.sidebar:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/4/46/Bitcoin.svg", width=60)
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        st.image("docs/ColoredLogo.png", width=100)
+    with col2:
+        st.image("https://upload.wikimedia.org/wikipedia/commons/4/46/Bitcoin.svg", width=50)
     st.markdown("## Control Panel")
     
     with st.expander("📂 Dataset Configuration", expanded=True):
