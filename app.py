@@ -1,6 +1,13 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
+import os
+
+# Inject Kaggle credentials from Streamlit secrets into env vars
+if hasattr(st, 'secrets'):
+    if 'KAGGLE_USERNAME' in st.secrets and 'KAGGLE_KEY' in st.secrets:
+        os.environ['KAGGLE_USERNAME'] = st.secrets['KAGGLE_USERNAME']
+        os.environ['KAGGLE_KEY']      = st.secrets['KAGGLE_KEY']
 
 import src.data_processor as dp
 from src.prophet_model import run_prophet

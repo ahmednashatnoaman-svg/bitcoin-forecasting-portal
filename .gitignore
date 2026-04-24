@@ -163,6 +163,7 @@ cython_debug/
 # Streamlit
 # .streamlit/ is needed for the app. Only ignore credentials
 .streamlit/credentials.toml
+.streamlit/secrets.toml
 
 # Dataset files - ignoring large CSVs for GitHub
 dataset/*.csv
