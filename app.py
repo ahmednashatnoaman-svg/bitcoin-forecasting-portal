@@ -3,8 +3,8 @@ import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
 
-import data_processor as dp
-import forecaster as fc
+import src.data_processor as dp
+import src.forecaster as fc
 
 # 1. Page Configuration & Theme Dictionary
 st.set_page_config(layout="wide", page_title="BTC Forecast Pro", page_icon="🏦", initial_sidebar_state="expanded")
@@ -12,7 +12,7 @@ st.set_page_config(layout="wide", page_title="BTC Forecast Pro", page_icon="🏦
 active_theme = {
     'primary': '#2563EB', 'bg': '#F1F5F9', 'card_bg': '#FFFFFF', 'text': '#0F172A', 
     'plotly_template': 'plotly_white', 'history_line': '#64748B',
-    'prophet': '#2563EB', 'arima': '#059669', 'es': '#7C3AED', 'xgb': '#D97706'
+    'prophet': '#2563EB', 'arima': '#059669', 'es': '#7C3AED', 'xgb': '#D97706', 'rf': '#EC4899'
 }
 
 # 2. State Management Initialization
@@ -93,7 +93,7 @@ with st.sidebar:
         uploaded_file = st.file_uploader("Upload CSV Dataset", type=['csv'])
         
     with st.expander("⚙️ Model Parameters", expanded=True):
-        model_choice = st.selectbox("Forecasting Engine", ['Prophet', 'ARIMA', 'Exponential Smoothing', 'XGBoost', 'Compare All Models'], index=0)
+        model_choice = st.selectbox("Forecasting Engine", ['Prophet', 'ARIMA', 'Exponential Smoothing', 'XGBoost', 'Random Forest (ML Regressor)', 'Compare All Models'], index=0)
         st.session_state.config['model'] = model_choice
         
         horizon = st.slider("Forecast Horizon (Days)", min_value=7, max_value=365, value=st.session_state.config['horizon'])
@@ -116,6 +116,10 @@ with st.sidebar:
                 kwargs['p'] = st.number_input("AR order (p)", 0, 5, 1)
                 kwargs['d'] = st.number_input("Differencing (d)", 0, 2, 1)
                 kwargs['q'] = st.number_input("MA order (q)", 0, 5, 1)
+                kwargs['seasonal_P'] = st.number_input("Seasonal AR (P)", 0, 5, 0)
+                kwargs['seasonal_D'] = st.number_input("Seasonal Differencing (D)", 0, 2, 1)
+                kwargs['seasonal_Q'] = st.number_input("Seasonal MA (Q)", 0, 5, 0)
+                kwargs['seasonal_m'] = st.number_input("Seasonal Period (m)", 0, 365, 30)
 
         if model_choice in ['XGBoost', 'Compare All Models']:
             st.markdown("#### XGBoost Settings")
@@ -123,6 +127,15 @@ with st.sidebar:
             kwargs['n_estimators'] = st.slider("Trees (n_estimators)", 50, 500, 100, key='x2')
             kwargs['max_depth'] = st.slider("Max Depth", 2, 10, 3, key='x3')
             kwargs['learning_rate'] = st.selectbox("Learning Rate", [0.01, 0.05, 0.1, 0.2], index=2)
+            kwargs['subsample'] = st.slider("Subsample Ratio", 0.1, 1.0, 0.8, key='x4')
+            kwargs['colsample_bytree'] = st.slider("Feature Sample Ratio", 0.1, 1.0, 0.8, key='x5')
+            kwargs['min_child_weight'] = st.slider("Min Child Weight", 1, 15, 1, key='x6')
+
+        if model_choice in ['Random Forest (ML Regressor)', 'Compare All Models']:
+            st.markdown("#### Random Forest Settings")
+            kwargs['rf_lag_days'] = st.slider("Lag Features (Days)", 7, 60, 14, key='rf1')
+            kwargs['rf_n_estimators'] = st.slider("Trees (n_estimators)", 50, 500, 100, key='rf2')
+            kwargs['rf_max_depth'] = st.slider("Max Depth", 2, 20, 10, key='rf3')
 
         if model_choice in ['Exponential Smoothing', 'Compare All Models']:
             st.markdown("#### Holt-Winters Settings")
@@ -182,7 +195,7 @@ with tab1:
 
     with st.spinner('Synchronizing Data & Executing Predictive Algorithms...'):
         results = {}
-        models_to_run = [model_mode] if model_mode != 'Compare All Models' else ['Prophet', 'ARIMA', 'Exponential Smoothing', 'XGBoost']
+        models_to_run = [model_mode] if model_mode != 'Compare All Models' else ['Prophet', 'ARIMA', 'Exponential Smoothing', 'XGBoost', 'Random Forest (ML Regressor)']
         
         for m in models_to_run:
             try:
@@ -225,7 +238,7 @@ with tab1:
         if 'SMA_200' in df.columns:
             fig.add_trace(go.Scatter(x=df.index, y=df['SMA_200'], mode='lines', name='200-Day SMA', line=dict(color='#555555', width=1, dash='dash')))
 
-    m_colors = {'Prophet': active_theme['prophet'], 'ARIMA': active_theme['arima'], 'Exponential Smoothing': active_theme['es'], 'XGBoost': active_theme['xgb']}
+    m_colors = {'Prophet': active_theme['prophet'], 'ARIMA': active_theme['arima'], 'Exponential Smoothing': active_theme['es'], 'XGBoost': active_theme['xgb'], 'Random Forest (ML Regressor)': active_theme['rf']}
     
     forecast_start_date = df.index[-1]
     

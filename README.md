@@ -1,46 +1,89 @@
-# Bitcoin Price Forecasting Portal
+<div align="center">
+  <h1>🏦 Bitcoin Price Forecasting Portal</h1>
+  <p><i>Advanced Time-Series Analysis & Machine Learning Dashboard for Cryptocurrencies</i></p>
 
-A premium Streamlit application designed for financial time-series analysis to forecast Bitcoin (BTC) price trends. This project features a robust data pipeline, professional UI aesthetics (dark mode, glassmorphism), and rigorous time-series algorithms explicitly configured for high volatility logic.
+  ![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
+  ![Streamlit](https://img.shields.io/badge/Streamlit-1.30.0-FF4B4B)
+  ![XGBoost](https://img.shields.io/badge/XGBoost-Enabled-orange)
+  ![Prophet](https://img.shields.io/badge/Prophet-Ready-blueviolet)
+  ![License](https://img.shields.io/badge/License-MIT-green)
+</div>
 
-## Dataset
-This app is tested using standard Kaggle datasets, specifically:
-**[Bitcoin Historical Data](https://www.kaggle.com/datasets/mczielinski/bitcoin-historical-data)**
+---
 
-Note: The app is capable of auto-detecting timestamps and downsampling large, minute-by-minute interval datasets to daily prices so that browser memory remains stable.
+A premium Streamlit application designed for sophisticated financial time-series analysis to forecast Bitcoin (BTC) price trends. This project features a robust automated data pipeline, professional UI aesthetics, and rigorous machine learning algorithms configured specifically to handle high-volatility financial data.
 
-## How the Models Handle Crypto-Volatility
-Cryptocurrencies, and Bitcoin in particular, exhibit high volatility with frequent regime changes, price shocks, and dramatic trend shifts.
+## 🌟 Key Features
 
-1. **Facebook Prophet**: 
-Prophet excels in volatile environments when tuned correctly. We have adjusted the `changepoint_prior_scale` hyperparameter from its default (0.05) to `0.15`. This explicitly tells the algorithm to increase its flexibility in detecting trend shifts—making it highly suited for sudden bull runs or crashes typical in cryptographic assets. It natively models heavy seasonality.
+- **Dynamic Data Ingestion**: Automatically detects Kaggle-style CSV formatting, standardizing timestamps and downsampling large minute-by-minute interval datasets to robust daily frequencies.
+- **Zero-Leakage Feature Engineering**: Implements rigorous moving averages and rolling standard deviations derived *strictly* from lagged target data, ensuring models never look into the future during multi-step forecasting.
+- **Expert Configuration Panel**: Total granular control over algorithmic hyperparameters, from ARIMA seasonal orders to XGBoost tree configurations.
+- **"Compare All Models" Mode**: Execute all forecasting engines simultaneously and visualize overlapping confidence bounds and consensus trajectories on a single interactive Plotly canvas.
 
-2. **Auto-ARIMA (pmdarima)**:
-Instead of assuming fixed autoregressive orders `(p,d,q)`, we employ an automated ARIMA search algorithm. The model finds the optimal integration (`d`) to stationarise the volatile series and tests multiple combination boundaries. This adaptive modeling guarantees that sudden stochastic shifts are captured in the parameter tuning, avoiding static baseline errors.
+## 🧠 Forecasting Engines
 
-## Installation & Setup
+The portal utilizes multiple parallel algorithms tailored to handle cryptocurrency volatility:
 
-1. **Clone and Setup Virtual Environment:**
-```bash
-git clone <your-repo>
-cd <repo-folder>
-python3 -m venv venv
-source venv/bin/activate
+1. **XGBoost (Extreme Gradient Boosting)**
+   - Utilizes advanced target-derived rolling statistics.
+   - Exposes extensive hyperparameters (`subsample`, `colsample_bytree`, `min_child_weight`) for regularization against market noise.
+2. **Random Forest (ML Regressor)**
+   - A robust bagging algorithm that naturally resists overfitting and handles non-linear financial patterns.
+3. **Facebook Prophet**
+   - Tuned `changepoint_prior_scale` for maximum flexibility in detecting rapid trend shifts and sudden crypto market cap surges.
+4. **Auto-ARIMA (PMDarima) & Seasonal ARIMA**
+   - Automatically optimizes autoregressive integrations `(p,d,q)` or allows for deep manual configuration of Seasonal components `(P,D,Q,m)`.
+5. **Exponential Smoothing (Holt-Winters)**
+   - Captures additive/multiplicative trends with damped forecasting modes to stabilize long-horizon predictions.
+
+## 📂 Project Structure
+
+```text
+.
+├── app.py                      # Main Streamlit dashboard application
+├── requirements.txt            # Dependency definitions
+├── README.md                   # Project documentation
+├── src/                        # Core backend package
+│   ├── data_processor.py       # Data cleaning and technical indicator logic
+│   └── forecaster.py           # Machine learning model architectures
+├── notebooks/                  # Experimental Jupyter Notebooks
+│   └── bitcoin-price-prediction-arima-xgboost-lstm-fbprop.ipynb
+├── docs/                       # Specifications and reference documents
+└── data/                       # Local dataset directory
 ```
 
-2. **Install Dependencies:**
-```bash
-pip install -r requirements.txt
-```
+## 🚀 Installation & Setup
 
-3. **Run the Application:**
-```bash
-streamlit run app.py
-```
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/your-username/bitcoin-forecasting-portal.git
+   cd bitcoin-forecasting-portal
+   ```
 
-Upload your Kaggle CSV to the sidebar to begin forecasting.
+2. **Create and activate a virtual environment:**
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
 
-## Required Tech Stack
--   **Streamlit**: Frontend presentation and state mapping.
--   **Plotly**: Interactive visualization rendering.
--   **Prophet / Statsmodels (pmdarima)**: Heavy lifting core engines.
--   **Pandas / Scikit-learn**: Data cleaning, metric calculation, and subset management.
+3. **Install the required dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Launch the Dashboard:**
+   ```bash
+   streamlit run app.py
+   ```
+
+## 📊 Usage Guide
+
+1. Launch the app and upload a historical Bitcoin price CSV (e.g., from Kaggle).
+2. Use the **Dataset Configuration** sidebar to select your target feature (typically `Close` or `Weighted_Price`).
+3. Set your **Forecast Horizon** (e.g., 30 Days) and **Confidence Bounds**.
+4. Choose a single engine or **Compare All Models**.
+5. Unfurl the **Expert Configurations** panel to fine-tune specific algorithmic behaviors.
+6. Click **Generate Forecast** to run the pipeline and render the interactive intelligence dashboard.
+
+---
+*Built with ❤️ for Time-Series Analysis & Financial Data Science.*
